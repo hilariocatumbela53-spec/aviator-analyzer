@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviator Analyzer</title>
+<style>
+body{background:#0b1220;color:white;font-family:Arial;padding:15px;margin:0}
+h1{color:#00e676;text-align:center;margin-bottom:5px}
+p.sub{text-align:center;color:#ccc}
+.card{background:#1a2436;padding:15px;border-radius:15px;margin-top:15px}
+input{width:100%;padding:14px;border-radius:10px;border:none;font-size:18px;box-sizing:border-box}
+button{width:100%;padding:14px;border:none;border-radius:10px;background:#00e676;color:#000;font-weight:bold;font-size:16px;margin-top:10px}
+button.limpar{background:#ff3b30;color:white}
+.alerta{background:#ffcc00;color:black;padding:12px;border-radius:10px;text-align:center;font-weight:bold;margin-top:15px;display:none}
+.item{padding:8px;border-radius:8px;margin:5px 0;font-weight:bold}
+.vermelho{background:#ff3b30}
+.amarelo{background:#ffcc00;color:black}
+.verde{background:#00e676;color:black}
+</style>
+</head>
+<body>
+
+<h1>AVIATOR ANALYZER</h1>
+<p class="sub">Painel de análise estatística</p>
+
+<div id="alerta" class="alerta"></div>
+
+<div class="card">
+<h2>Registar um valor</h2>
+<input id="valor" type="number" step="0.01" placeholder="Exemplo: 2.50">
+<button onclick="adicionar()">ADICIONAR REGISTO</button>
+</div>
+
+<div class="card">
+<h2>Estatísticas históricas</h2>
+<p>Total de registos: <span id="total">0</span></p>
+<p>Média: <b id="media">0.00</b></p>
+<p>Maior valor: <span id="maior">0.00</span></p>
+<p>Menor valor: <span id="menor">0.00</span></p>
+<p>Abaixo de 2x: <b id="abaixo2">0</b> vezes</p>
+<p>Acima de 10x: <b id="acima10">0</b> vezes</p>
+<p>Rodadas sem passar de 5x: <b id="sem5">0</b></p>
+</div>
+
+<div class="card">
+<h2>Histórico de registos</h2>
+<div id="historico"></div>
+<button class="limpar" onclick="limpar()">LIMPAR HISTÓRICO</button>
+</div>
+
+<p style="text-align:center;color:#888;font-size:13px">Ferramenta de análise de dados históricos. Não realiza previsões.</p>
+
+<script>
+let dados = [];
+
+function adicionar(){
+  let v = parseFloat(document.getElementById('valor').value);
+  if(!v || v < 1){ alert('Escreve um valor válido, ex: 2.50'); return; }
+  dados.unshift(v);
+  document.getElementById('valor').value = '';
+  atualizar();
+}
+
+function limpar(){ dados=[]; atualizar(); }
+
+function atualizar(){
+  let total = dados.length;
+  let soma = dados.reduce((a,b)=>a+b,0);
+  let media = total ? (soma/total).toFixed(2) : '0.00';
+  let maior = total ? Math.max(...dados).toFixed(2) : '0.00';
+  let menor = total ? Math.min(...dados).toFixed(2) : '0.00';
+  let abaixo2 = dados.filter(x=>x<2).length;
+  let acima10 = dados.filter(x=>x>=10).length;
+
+  let sem5 = 0;
+  for(let x of dados){ if(x < 5) sem5++; else break; }
+
+  document.getElementById('total').innerText = total;
+  document.getElementById('media').innerText = media;
+  document.getElementById('maior').innerText = maior;
+  document.getElementById('menor').innerText = menor;
+  document.getElementById('abaixo2').innerText = abaixo2;
+  document.getElementById('acima10').innerText = acima10;
+  document.getElementById('sem5').innerText = sem5;
+
+  let alerta = document.getElementById('alerta');
+  if(sem5 >= 10){
+    alerta.style.display='block';
+    alerta.innerText = '⚠️ ATENÇÃO: Já passaram '+sem5+' rodadas sem passar de 5x';
+  } else {
+    alerta.style.display='none';
+  }
+
+  let hist = document.getElementById('historico');
+  hist.innerHTML = '';
+  dados.forEach(v=>{
+    let cor = v < 2 ? 'vermelho' : (v >= 10 ? 'verde' : 'amarelo');
+    hist.innerHTML += '<div class="item '+cor+'">'+v.toFixed(2)+'x</div>';
+  });
+}
+</script>
+</body>
+  </html>
